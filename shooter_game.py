@@ -9,8 +9,10 @@ FPS = 60
 score = 0
 pygame.font.init()
 font1 = pygame.font.Font(None, 36)
+font2 = pygame.font.Font(None, 50)
 lost = 0
 game_over = False
+finish = False
 
 
 window = pygame.display.set_mode(SIZE)
@@ -109,28 +111,36 @@ while not game_over:
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
                 player.fire()
+    if not finish:
+        window.blit(background, (0,0))
+        player.reset()
+        player.update()
+        enemies.update()
+        enemies.draw(window)
+        bullets.update()
+        bullets.draw(window)
 
-    window.blit(background, (0,0))
-    player.reset()
-    player.update()
-    enemies.update()
-    enemies.draw(window)
-    bullets.update()
-    bullets.draw(window)
+        text_scored = font1.render("Вбито:" + str(score), True, (255,255,255))
+        window.blit(text_scored, (0,0))
 
-    text_scored = font1.render("Вбито:" + str(score), True, (255,255,255))
-    window.blit(text_scored, (0,0))
-
-    killed_enemies = pygame.sprite.groupcollide(
-        enemies, bullets, True, True
-    )
-    for ke in killed_enemies:
-        score += 1
-        new_enemy = Enemy("ufo.png", random.randint(0,WIDTH), 0, (70,70), random.randint(1,5))
-        enemies.add(new_enemy)
+        killed_enemies = pygame.sprite.groupcollide(
+            enemies, bullets, True, True
+        )
+        for ke in killed_enemies:
+            score += 1
+            new_enemy = Enemy("ufo.png", random.randint(0,WIDTH), 0, (70,70), random.randint(1,5))
+            enemies.add(new_enemy)
+        
+        if lost > 6 or pygame.sprite.spritecollide(player, enemies, True):
+            finish = True
+            lose = font2.render("YOU LOSE", True, (255,0,0))
+            window.blit(lose, (WIDTH/2, HEIGHT/2))
+        
+        if score > 100:
+            finish = True
+            win = font2.render("YOU WON", True, (255,0,0))
+            window.blit(win, (WIDTH/2, HEIGHT/2))
     
-    if score == 100 or pygame.sprite.spritecollide(player, enemies, True):
-        game_over = True
 
     pygame.display.update()
     clock.tick(60)
